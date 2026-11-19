@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "ask": [
+      "Bash(python3 trader-broker/ticket.py approve*)",
+      "Bash(python3 trader-broker/paper.py execute*)",
+      "Bash(python3 trader-broker/paper.py settle*)",
+      "Bash(python3 trader-broker/paper.py reset*)"
+    ]
+  }
+}
