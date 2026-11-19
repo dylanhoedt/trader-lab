@@ -50,6 +50,18 @@ script to identify itself: put your name and email in `trader/config.json`
 (`"sec_user_agent": "Your Name you@example.com"`) or in the `SEC_USER_AGENT`
 environment variable.
 
+## This lab: paper trading in Claude Code
+
+This fork runs a live paper account in `trader/` with a local paper broker
+(`trader-broker/paper.py`): approved orders fill against delayed quotes, no
+broker account and no real money. The skills are linked into
+`.claude/skills/`, and `CLAUDE.md` holds the rules Claude follows here.
+
+```bash
+python3 trader-broker/paper.py account    # cash, positions, P/L
+python3 trader-broker/paper.py orders     # the paper order book
+```
+
 ## The eleven
 
 | command | job | what it does |
@@ -178,7 +190,7 @@ trader-pelosi/     SKILL.md, ptr.py
 trader-analyst/    SKILL.md, facts.py, metrics.example.json
 trader-screener/   SKILL.md, screen.py, rules.example.json
 trader-risk/       SKILL.md, check.py
-trader-broker/     SKILL.md, ticket.py, claude_desktop_config.example.json
+trader-broker/     SKILL.md, ticket.py, paper.py, claude_desktop_config.example.json
 trader-tax/        SKILL.md, lots.py, portfolio.example.json
 trader-alerts/     SKILL.md, alerts.py, alerts.example.json
 trader-rebalance/  SKILL.md, rebalance.py

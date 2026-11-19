@@ -233,7 +233,8 @@ def render(order, idx, total, cfg, risk, state, today):
     broker = str(cfg.get("broker", "alpaca")).lower()
     paper = cfg.get("paper", True)
     acct = "PAPER account" if paper else "LIVE ACCOUNT, REAL MONEY"
-    lines = ["ORDER %d of %d, %s, %s" % (idx, total, acct, "Interactive Brokers" if broker == "ibkr" else "Alpaca"),
+    name = {"ibkr": "Interactive Brokers", "paper": "local paper broker"}.get(broker, "Alpaca")
+    lines = ["ORDER %d of %d, %s, %s" % (idx, total, acct, name),
              "  " + plain(order)]
     if order.get("why"):
         lines.append("  why: " + order["why"])
@@ -243,13 +244,15 @@ def render(order, idx, total, cfg, risk, state, today):
     if broker == "ibkr":
         lines.append("  Claude drafts this with the Interactive Brokers connector. IBKR sends it to your")
         lines.append("  IBKR account, and it only goes to the market after you approve it there.")
+    elif broker == "paper":
+        lines.append("  Claude will run: paper.py execute --index %d (simulated fill, no real money)" % idx)
     else:
         lines.append("  Claude will call place_stock_order with exactly:")
         for l in json.dumps(tool_input(order), indent=2).splitlines():
             lines.append("    " + l)
     if ready:
         lines.append("  Reply \"yes\" to place this one order, or \"no\" to skip it.")
-        if broker != "ibkr":
+        if broker not in ("ibkr", "paper"):
             lines.append("  Claude's own card then asks again: Allow once places it, Deny stops it.")
     return "\n".join(lines), ready
 
@@ -368,6 +371,8 @@ def cmd_approve(a):
     print("Recorded your yes for order %d: %s." % (a.index, plain(order)))
     if str(cfg.get("broker", "alpaca")).lower() == "ibkr":
         print("Now draft it with the Interactive Brokers connector; approve it in your IBKR account.")
+    elif str(cfg.get("broker", "")).lower() == "paper":
+        print("Now run: python3 trader-broker/paper.py execute --index %d" % a.index)
     else:
         print("Now call place_stock_order with exactly:")
         print(json.dumps(tool_input(order), indent=2))

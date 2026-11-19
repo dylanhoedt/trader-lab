@@ -108,6 +108,32 @@ IBKR as well. Set `"broker": "ibkr"` in `trader/config.json`, and size with
 `--whole-shares` if IBKR wants share counts. Set its tools that draft orders
 to Needs approval too.
 
+## Setup C: the local paper broker (no account, works anywhere)
+
+`paper.py` (in this folder) is a simulated broker for when there is no
+brokerage connector, for example in a Claude Code cloud session. It fills an
+approved order against a free delayed quote (Yahoo, through trader-alerts),
+slips the price against the user by `paper_slippage_bps` (default 5), and
+keeps the account in `trader/portfolio.json` with tax lots, so trader-risk,
+trader-tax and trader-rebalance all see it. No real money moves, ever.
+
+1. In `trader/config.json` set `"broker": "paper"` and keep `"paper": true`.
+2. Open the account: `python3 "${CLAUDE_SKILL_DIR}/paper.py" reset --confirm`
+   (cash = the budget, or `--cash N`).
+3. Per order, after the user's yes is recorded with `ticket.py approve`, run
+   `python3 "${CLAUDE_SKILL_DIR}/paper.py" execute --index N` instead of
+   calling `place_stock_order`. It refuses any order without that recorded
+   yes for today, and it records the result in `trader/state/broker.json`
+   itself, so there is no `ticket.py result` step.
+4. While the NYSE is closed the order is queued; `paper.py settle` fills it
+   once the market is open (a day order that still does not fill expires).
+5. `paper.py account` shows cash, positions at current prices and P/L;
+   `paper.py orders` shows the paper order book.
+
+In Claude Code keep `paper.py execute`, `paper.py reset` and `ticket.py
+approve` on ask in `.claude/settings.json`, so the permission prompt is the
+second check, the same as Allow once for Alpaca.
+
 ## Steps, for each order
 
 1. `ticket.py show`. Only READY tickets go to the user. A ticket that is NOT
